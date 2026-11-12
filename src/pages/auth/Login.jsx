@@ -40,7 +40,10 @@ export default function Login() {
 
     setSubmitting(true);
     try {
-      const user = await login({ email: form.email.trim(), password: form.password });
+      const user = await login({
+        email: form.email.trim(),
+        password: form.password,
+      });
       const fallback = user.role === 'ADMIN' ? '/admin' : '/dashboard';
       navigate(fallback, { replace: true });
     } catch (error) {

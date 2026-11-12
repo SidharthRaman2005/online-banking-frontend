@@ -39,3 +39,12 @@ export function validateAmount(value, { max } = {}) {
   if (max !== undefined && number > Number(max)) return 'Insufficient balance';
   return null;
 }
+
+export function validateInitialDeposit(value) {
+  if (value === '' || value === null || value === undefined) return 'Initial deposit is required';
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 'Enter a valid amount';
+  if (number < 500) return 'Minimum deposit of ₹500 is required to open an account';
+  if (!/^\d+(\.\d{1,2})?$/.test(String(value))) return 'Amount may have at most 2 decimal places';
+  return null;
+}

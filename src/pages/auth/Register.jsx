@@ -6,7 +6,12 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import AuthShell from '../../components/layout/AuthShell';
 import { formatCurrency } from '../../utils/formatters';
-import { validateEmail, validatePassword, validateUsername } from '../../utils/validators';
+import {
+  validateEmail,
+  validateInitialDeposit,
+  validatePassword,
+  validateUsername,
+} from '../../utils/validators';
 
 /** Shown once, immediately after registering — this is where the UPI ID is first revealed. */
 function SuccessPanel({ account }) {
@@ -63,6 +68,7 @@ export default function Register() {
   const [form, setForm] = useState({
     username: '',
     email: '',
+    initialDeposit: '500',
     password: '',
     confirmPassword: '',
   });
@@ -84,6 +90,7 @@ export default function Register() {
     const errors = {
       username: validateUsername(form.username),
       email: validateEmail(form.email),
+      initialDeposit: validateInitialDeposit(form.initialDeposit),
       password: validatePassword(form.password),
       confirmPassword:
         form.confirmPassword !== form.password ? 'Passwords do not match' : null,
@@ -99,6 +106,7 @@ export default function Register() {
         username: form.username.trim(),
         email: form.email.trim(),
         password: form.password,
+        initialDeposit: Number(form.initialDeposit),
       });
       setCreated(account);
     } catch (error) {
@@ -115,7 +123,7 @@ export default function Register() {
       title={created ? 'Account created' : 'Open your OBS account'}
       subtitle={created
         ? 'Your new account is ready. Keep these details handy for your first sign in.'
-        : 'An account number, UPI ID, and opening balance are issued instantly.'}
+        : 'Open an account with a minimum initial deposit of ₹500.'}
     >
       {created ? (
         <SuccessPanel account={created} />
@@ -149,6 +157,18 @@ export default function Register() {
               value={form.email}
               onChange={update('email')}
               error={fieldErrors.email}
+            />
+            <Input
+              label="Initial deposit"
+              type="number"
+              step="0.01"
+              min="500"
+              prefix="₹"
+              placeholder="500.00"
+              value={form.initialDeposit}
+              onChange={update('initialDeposit')}
+              error={fieldErrors.initialDeposit}
+              hint="Minimum initial deposit of ₹500 is required to open an account."
             />
             <Input
               label="Password"
