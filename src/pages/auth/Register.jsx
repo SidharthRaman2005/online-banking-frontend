@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Copy } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,7 @@ import Input from '../../components/ui/Input';
 import AuthShell from '../../components/layout/AuthShell';
 import { formatCurrency } from '../../utils/formatters';
 import { validateEmail, validatePassword, validateUsername } from '../../utils/validators';
+import { authService } from '../../services/authService';
 
 /** Shown once, immediately after registering — this is where the UPI ID is first revealed. */
 function SuccessPanel({ account }) {
@@ -66,11 +67,57 @@ export default function Register() {
     password: '',
     confirmPassword: '',
     openingDeposit: '500',
+    googleIdToken: '',
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [banner, setBanner] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [created, setCreated] = useState(null);
+  const [googleVerifying, setGoogleVerifying] = useState(false);
+  const googleButton = useRef(null);
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId || clientId === 'YOUR_GOOGLE_WEB_CLIENT_ID' || !googleButton.current) return undefined;
+
+    const renderGoogleButton = () => {
+      if (!window.google?.accounts?.id || !googleButton.current) return;
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async ({ credential }) => {
+          setGoogleVerifying(true);
+          setBanner('');
+          try {
+            const result = await authService.verifyGoogle(credential);
+            setForm((current) => ({ ...current, email: result.email, googleIdToken: credential }));
+            setFieldErrors((current) => ({ ...current, email: null }));
+          } catch (error) {
+            setBanner(error.message);
+          } finally {
+            setGoogleVerifying(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(googleButton.current, {
+        theme: 'outline',
+        size: 'large',
+        width: 360,
+        text: 'signup_with',
+      });
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+      return undefined;
+    }
+    const timer = window.setInterval(() => {
+      if (window.google?.accounts?.id) {
+        window.clearInterval(timer);
+        renderGoogleButton();
+      }
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const update = (key) => (event) => {
     setForm((current) => ({ ...current, [key]: event.target.value }));
@@ -103,6 +150,7 @@ export default function Register() {
         email: form.email.trim(),
         password: form.password,
         openingDeposit: form.openingDeposit,
+        googleIdToken: form.googleIdToken,
       });
       setCreated(account);
     } catch (error) {
@@ -136,6 +184,13 @@ export default function Register() {
           )}
 
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
+            <div className="rounded-xl bg-surface-alt p-4">
+              <p className="mb-2 text-sm font-medium text-ink-700">Verify your email with Google</p>
+              <div ref={googleButton} className="min-h-10" />
+              {googleVerifying && <p className="mt-2 text-xs text-ink-500">Verifying Google email...</p>}
+              {!import.meta.env.VITE_GOOGLE_CLIENT_ID
+                && <p className="mt-2 text-xs text-state-warn">Google signup is not configured yet.</p>}
+            </div>
             <Input
               label="Username"
               placeholder="sidharth"
@@ -153,6 +208,7 @@ export default function Register() {
               value={form.email}
               onChange={update('email')}
               error={fieldErrors.email}
+              hint={form.googleIdToken ? 'Verified by Google.' : 'Verify this email with Google before creating your account.'}
             />
             <Input
               label="Password"

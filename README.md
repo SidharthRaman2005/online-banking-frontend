@@ -33,6 +33,10 @@ One variable, in `.env.development` (already committed, since it holds nothing s
 VITE_API_BASE_URL=/api
 ```
 
+Set `VITE_GOOGLE_CLIENT_ID` to the Google OAuth web client ID to enable the verified-email signup
+button. The backend must use the same client ID through `GOOGLE_CLIENT_ID`; registration rechecks
+the Google ID token server-side before creating the account.
+
 `/api` is a **relative** path on purpose. The Vite dev server proxies it to
 `http://localhost:8081`, so the browser only ever talks to one origin and CORS never comes into
 play during development. The proxy is configured in [vite.config.js](vite.config.js).
