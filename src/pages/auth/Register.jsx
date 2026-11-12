@@ -65,6 +65,7 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
+    openingDeposit: '500',
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [banner, setBanner] = useState('');
@@ -87,6 +88,8 @@ export default function Register() {
       password: validatePassword(form.password),
       confirmPassword:
         form.confirmPassword !== form.password ? 'Passwords do not match' : null,
+      openingDeposit:
+        Number(form.openingDeposit) >= 500 ? null : 'Opening deposit must be at least ₹500',
     };
     if (Object.values(errors).some(Boolean)) {
       setFieldErrors(errors);
@@ -99,6 +102,7 @@ export default function Register() {
         username: form.username.trim(),
         email: form.email.trim(),
         password: form.password,
+        openingDeposit: form.openingDeposit,
       });
       setCreated(account);
     } catch (error) {
@@ -115,7 +119,7 @@ export default function Register() {
       title={created ? 'Account created' : 'Open your OBS account'}
       subtitle={created
         ? 'Your new account is ready. Keep these details handy for your first sign in.'
-        : 'An account number, UPI ID, and opening balance are issued instantly.'}
+      : 'Make a minimum opening deposit of ₹500 to activate your account.'}
     >
       {created ? (
         <SuccessPanel account={created} />
@@ -168,6 +172,17 @@ export default function Register() {
               value={form.confirmPassword}
               onChange={update('confirmPassword')}
               error={fieldErrors.confirmPassword}
+            />
+            <Input
+              label="Opening deposit"
+              type="number"
+              min="500"
+              step="0.01"
+              placeholder="500"
+              value={form.openingDeposit}
+              onChange={update('openingDeposit')}
+              error={fieldErrors.openingDeposit}
+              hint="Minimum ₹500. Your account opens with ₹500."
             />
             <Button type="submit" loading={submitting} className="w-full" size="lg">
               Create account

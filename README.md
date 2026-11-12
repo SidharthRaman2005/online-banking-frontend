@@ -34,7 +34,7 @@ VITE_API_BASE_URL=/api
 ```
 
 `/api` is a **relative** path on purpose. The Vite dev server proxies it to
-`http://localhost:8080`, so the browser only ever talks to one origin and CORS never comes into
+`http://localhost:8081`, so the browser only ever talks to one origin and CORS never comes into
 play during development. The proxy is configured in [vite.config.js](vite.config.js).
 
 Only change this if you deploy the frontend separately from the API, in which case set it to the

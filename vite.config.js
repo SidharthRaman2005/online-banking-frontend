@@ -8,7 +8,7 @@ export default defineConfig({
     // Proxying /api in dev keeps the browser on one origin, so CORS never comes into play.
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         changeOrigin: true,
       },
     },
